@@ -22,7 +22,9 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 $string['coursecreator'] = 'Créateur de cours';
+$string['coursecreator:myaddinstance'] = 'Ajouter un nouveau bloc Créateur de cours sur le tableau de bord';
 $string['coursecreator:addinstance'] = 'Ajouter un nouveau bloc Créateur de cours';
+$string['coursecreator:createcourse'] = 'Peut créer un cours via le bloc';
 $string['pluginname'] = 'Bloc Créateur de cours';
 $string['privacy:metadata'] = 'Le bloc Créateur de cours ne stocke pas de données personnelles.';
 $string['headerconfig'] = 'Informations sur le fonctionnement du bloc';

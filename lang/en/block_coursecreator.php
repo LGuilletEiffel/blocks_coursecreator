@@ -22,7 +22,9 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 $string['coursecreator'] = 'Course creator';
+$string['coursecreator:myaddinstance'] = 'Add a new course creator block on dashboard';
 $string['coursecreator:addinstance'] = 'Add a new course creator block';
+$string['coursecreator:createcourse'] = 'Can create a course with the block';
 $string['pluginname'] = 'Block Course creator';
 $string['privacy:metadata'] = 'The Course creator block does not store data itself.';
 $string['headerconfig'] = 'TODO : Fill this string';
