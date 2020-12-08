@@ -30,6 +30,8 @@ class block_coursecreator extends block_base {
 
     public function get_content() {
 
+        global $CFG;
+
         if ($this->content !== null) {
 
             return $this->content;
@@ -40,8 +42,8 @@ class block_coursecreator extends block_base {
         if (has_capability('block/coursecreator:createcourse', $systemcontext)) {
 
             $this->content = new stdClass;
-            $this->content->text = '<a href = /blocks/coursecreator/coursecreation.php>'
-                    . '<img src = /blocks/coursecreator/pix/addcourse.png width="50" height="50"/>'
+            $this->content->text = '<a href = ' . $CFG->wwwroot . '/blocks/coursecreator/coursecreation.php>'
+                    . '<img src = ' . $CFG->wwwroot . '/blocks/coursecreator/pix/addcourse.png width="50" height="50"/>'
                     . '</a>';
         }
 
