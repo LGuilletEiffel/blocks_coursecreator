@@ -39,19 +39,22 @@ $string['suffixcohort'] = 'Suffixe de la cohorte pour le code Apogée';
 $string['mailrecipients'] = 'Destinataires du mail';
 $string['requiredfieldform'] = 'Champ requis';
 $string['newcoursename'] = 'Nom complet du cours';
-$string['apogeecode'] = 'Code APOGEE ou Nom abrégé du cours<br>Retrouvez le code APOGEE correspondant sur <a href=https://dora.u-pem.fr/>DORA</a>.';
+$string['apogeecode'] = 'Indiquez le code APOGEE de votre cours<br>Retrouvez le code APOGEE correspondant sur'
+        . ' <a href=https://dora.u-pem.fr/>DORA</a> ou contactez votre secrétariat ou indiquez un nom abrégé du cours.';
 $string['validateform'] = 'Créer le cours';
-$string['destinationcategory'] = 'Catégorie destination';
+$string['destinationcategory'] = 'Catégorie destination (par défaut l\'année en cours';
 $string['importtext'] = 'Importez du contenu d\'un cours existant';
 $string['nocopycourse'] = 'Nouveau cours, aucune importation';
 $string['coursechoice'] = 'Choisissez votre contenu souhaité parmi vos cours dans le champ ci-dessous';
-$string['addstudents'] = 'Pour inscrire vos étudiants, remplir  l\'un des champs suivants.';
+$string['addstudents'] = '<h3>Pour inscrire vos étudiants, renseignez  l\'un des deux champs suivants.</h3>';
 $string['nocohort'] = 'Pas de sélection';
-$string['cohortchoice'] = 'Choisissez de préférence le numéro d\'étape correspondant dans le champ ci-dessous';
+$string['cohortchoice'] = 'Choisissez de préférence le numéro d\'étape correspondant dans le champ ci-dessous<br>'
+        . 'La liste est limitée à 26 propositions, indiquez les premiers caractères pour voir apparaitre la liste.';
 $string['apogeecodestudent'] = 'Si vous ne le connaissez pas, indiquez le code étape (APOGEE) de la population';
-$string['selectstudent'] = 'Sinon, inscrivez le nom suivi du prénom d\'un de vos étudiants et le
+$string['selectstudent'] = 'Inscrivez le nom suivi du prénom d\'un de vos étudiants et le
     programme essaiera de trouver le groupe d\'étudiant correspondant';
-$string['commentteacher'] = 'Informations supplémentaires à transmettre sur le cours';
+$string['commentteacher'] = 'Si vous ne trouvez pas ces informations, indiquez le nous dans le champ suivant'
+        . ' ainsi que toutes informations supplémentaires à transmettre sur le cours.';
 $string['mailsubject'] = 'Demande de création du cours {$a->coursename} par {$a->teacher}';
 $string['messagestart'] = 'Bonjour,
 L\'enseignant : {$a->teacher} a demandé(e) la création du cours :

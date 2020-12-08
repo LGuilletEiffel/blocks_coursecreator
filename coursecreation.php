@@ -91,34 +91,36 @@ if ($mform->is_cancelled()) {
         $cohortid = $fromform->cohortchoice;
 
         $typecohort = 1;
-    } else if ($fromform->apogeecodestudent != "") {
+//    } else if ($fromform->apogeecodestudent != "") {
+//
+//        // Vérifier si une cohorte a cet idnumber (en rajoutant le suffixe) dans la catégorie autorisée puis enrolcohort.
+//
+//        $idnumber = $fromform->apogeecodestudent . get_config('coursecreator', 'suffixcohort');
+//        $contextdestinationcategoryid = $DB->get_record('context',
+//                        array('contextlevel' => CONTEXT_COURSECAT,
+//                            'instanceid' => get_config('coursecreator', 'defaultdestinationcategorysettings')))->id;
+//
+//        if ($DB->record_exists('cohort', array('idnumber' => $idnumber, 'contextid' => $contextdestinationcategoryid))) {
+//
+//            $cohortid = $DB->get_record('cohort', array('idnumber' => $idnumber, 'contextid' => $contextdestinationcategoryid))->id;
+//
+//            enrolcohort($cohortid, $newcourse->id);
+//        } else if ($DB->record_exists('cohort', array('idnumber' => $fromform->apogeecodestudent,
+//                    'contextid' => $contextdestinationcategoryid))) {
+//
+//            $cohortid = $DB->get_record('cohort', array('idnumber' => $fromform->apogeecodestudent,
+//                        'contextid' => $contextdestinationcategoryid))->id;
+//
+//            enrolcohort($cohortid, $newcourse->id);
+//        } else {
+//
+//            $cohortid = 0;
+//        }
+//
+//        $typecohort = 2;
+    }
 
-        // Vérifier si une cohorte a cet idnumber (en rajoutant le suffixe) dans la catégorie autorisée puis enrolcohort.
-
-        $idnumber = $fromform->apogeecodestudent . get_config('coursecreator', 'suffixcohort');
-        $contextdestinationcategoryid = $DB->get_record('context',
-                        array('contextlevel' => CONTEXT_COURSECAT,
-                            'instanceid' => get_config('coursecreator', 'defaultdestinationcategorysettings')))->id;
-
-        if ($DB->record_exists('cohort', array('idnumber' => $idnumber, 'contextid' => $contextdestinationcategoryid))) {
-
-            $cohortid = $DB->get_record('cohort', array('idnumber' => $idnumber, 'contextid' => $contextdestinationcategoryid))->id;
-
-            enrolcohort($cohortid, $newcourse->id);
-        } else if ($DB->record_exists('cohort', array('idnumber' => $fromform->apogeecodestudent,
-                    'contextid' => $contextdestinationcategoryid))) {
-
-            $cohortid = $DB->get_record('cohort', array('idnumber' => $fromform->apogeecodestudent,
-                        'contextid' => $contextdestinationcategoryid))->id;
-
-            enrolcohort($cohortid, $newcourse->id);
-        } else {
-
-            $cohortid = 0;
-        }
-
-        $typecohort = 2;
-    } else if ($fromform->namestudent != "") {
+    if ($fromform->namestudent != "") {
 
         // Chercher les cohortes où il est inscrit.
         // Vérifier qu'il n'y en a qu'une dans la catégorie autorisée puis enrolcohort.
@@ -156,7 +158,7 @@ if ($mform->is_cancelled()) {
 
     sendmail($typecohort, $fromform->coursechoice, $coursedata->fullname, $coursedata->shortname,
             $newcourse->id, $countcohorts, $listcorrectcohortusers, $fromform->commentteacher, $cohortid,
-            $fromform->apogeecodestudent, $fromform->namestudent);
+            /* $fromform->apogeecodestudent , */ $fromform->namestudent);
 
     redirect($redirecturlcourse);
 } else {

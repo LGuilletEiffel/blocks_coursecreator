@@ -93,16 +93,18 @@ class coursecreation_form extends moodleform {
         }
 
         $optionscohort = array(
+            'multiple' => true,
             'ajax' => 'tool_lp/form-cohort-selector',
             'data-contextid' => $defaultdestinationcategorycontextid,
         );
         $mform->addElement('autocomplete', 'cohortchoice', get_string('cohortchoice', 'block_coursecreator'), array(), $optionscohort);
 
-        $mform->addElement('text', 'apogeecodestudent',
-                get_string('apogeecodestudent', 'block_coursecreator'));
-        $mform->setType('apogeecodestudent', PARAM_TEXT);
+//        $mform->addElement('text', 'apogeecodestudent',
+//                get_string('apogeecodestudent', 'block_coursecreator'));
+//        $mform->setType('apogeecodestudent', PARAM_TEXT);
 
         $optionsuser = array(
+            'multiple' => true,
             'ajax' => 'tool_lp/form-user-selector'
         );
         $mform->addElement('autocomplete', 'namestudent', get_string('selectstudent', 'block_coursecreator'), array(), $optionsuser);
