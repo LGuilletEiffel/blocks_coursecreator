@@ -84,13 +84,47 @@ if ($mform->is_cancelled()) {
         copycourse($fromform->coursechoice, $newcourse->id);
     }
 
-    if ($fromform->cohortchoice != "") {
 
-        enrolcohort($fromform->cohortchoice, $newcourse->id);
+    foreach ($fromform->cohortchoice as $cohortchoice) {
 
-        $cohortid = $fromform->cohortchoice;
+        enrolcohort($cohortchoice, $newcourse->id);
+    }
 
-        $typecohort = 1;
+    foreach ($fromform->namestudent as $studentid) {
+
+        // Chercher les cohortes où il est inscrit.
+        // Vérifier qu'il n'y en a qu'une dans la catégorie autorisée puis enrolcohort.
+
+        $listcohortsuser = $DB->get_records('cohort_members', array('userid' => $studentid));
+
+        $contextdestinationcategoryid = $DB->get_record('context',
+                        array('contextlevel' => CONTEXT_COURSECAT,
+                            'instanceid' => get_config('coursecreator', 'defaultdestinationcategorysettings')))->id;
+
+        foreach ($listcohortsuser as $cohortuser) {
+
+            if ($DB->record_exists('cohort', array('id' => $cohortuser->cohortid, 'contextid' => $contextdestinationcategoryid))) {
+
+                $countcohorts++;
+
+                if ($countcohorts == 1) {
+
+                    $cohortid = $DB->get_record('cohort',
+                                    array('id' => $cohortuser->cohortid, 'contextid' => $contextdestinationcategoryid))->id;
+                }
+
+                $listcorrectcohortusers[] = $DB->get_record('cohort',
+                        array('id' => $cohortuser->cohortid, 'contextid' => $contextdestinationcategoryid));
+            }
+        }
+
+        if ($countcohorts == 1) {
+
+            enrolcohort($cohortid, $newcourse->id);
+        }
+    }
+
+// Reliquat de la troisième méthode d'inscription des cohortes. Conservés ici pour s'y on veut la réadapter pour s'en servir.
 //    } else if ($fromform->apogeecodestudent != "") {
 //
 //        // Vérifier si une cohorte a cet idnumber (en rajoutant le suffixe) dans la catégorie autorisée puis enrolcohort.
@@ -118,47 +152,9 @@ if ($mform->is_cancelled()) {
 //        }
 //
 //        $typecohort = 2;
-    }
-
-    if ($fromform->namestudent != "") {
-
-        // Chercher les cohortes où il est inscrit.
-        // Vérifier qu'il n'y en a qu'une dans la catégorie autorisée puis enrolcohort.
-
-        $listcohortsuser = $DB->get_records('cohort_members', array('userid' => $fromform->namestudent));
-
-        $contextdestinationcategoryid = $DB->get_record('context',
-                        array('contextlevel' => CONTEXT_COURSECAT,
-                            'instanceid' => get_config('coursecreator', 'defaultdestinationcategorysettings')))->id;
-
-        foreach ($listcohortsuser as $cohortuser) {
-
-            if ($DB->record_exists('cohort', array('id' => $cohortuser->cohortid, 'contextid' => $contextdestinationcategoryid))) {
-
-                $countcohorts++;
-
-                if ($countcohorts == 1) {
-
-                    $cohortid = $DB->get_record('cohort',
-                                    array('id' => $cohortuser->cohortid, 'contextid' => $contextdestinationcategoryid))->id;
-                }
-
-                $listcorrectcohortusers[] = $DB->get_record('cohort',
-                        array('id' => $cohortuser->cohortid, 'contextid' => $contextdestinationcategoryid));
-            }
-        }
-
-        if ($countcohorts == 1) {
-
-            enrolcohort($cohortid, $newcourse->id);
-        }
-
-        $typecohort = 3;
-    }
 
     sendmail($typecohort, $fromform->coursechoice, $coursedata->fullname, $coursedata->shortname,
-            $newcourse->id, $countcohorts, $listcorrectcohortusers, $fromform->commentteacher, $cohortid,
-            /* $fromform->apogeecodestudent , */ $fromform->namestudent);
+            $newcourse->id, $fromform->commentteacher, $fromform->namestudent);
 
     redirect($redirecturlcourse);
 } else {
@@ -245,6 +241,8 @@ function enrolcohort($cohortid, $courseid) {
 
 function sendmail($typecohort, $origincourseid, $coursefullname, $courseshortname, $newcourseid,
         $countcohorts, $listcorrectcohortusers, $commentteacher, $cohortid, $apogeecode, $studentid) {
+
+    // A modifier maintenant qu'on peut inscrire plusieurs cohortes.
 
     global $USER, $DB, $CFG;
 
