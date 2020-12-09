@@ -75,4 +75,10 @@ $string['messageerror'] = 'L\'inscription des cohortes ne correspond à aucun ca
         . ' merci de râler gentiment sur le développeur.';
 $string['messagecommentteacher'] = "L'enseignant a rajouté des informations que vous pouvez consulter ci-dessous : \n" . '{$a->commentteacher}';
 $string['messageending'] = 'Vous pouvez consulter le nouveau cours à l\'adresse suivante : {$a->courseurl}.';
+$string['couplingcohortstudent'] = 'Cohorte {$a->cohortname} avec l\'étudiant {$a->studentfirstname} {$a->studentmastname}';
+$string['messageallcohortlist'] = 'La ou les cohortes suivantes ont été inscrites depuis la liste : {$a}';
+$string['messageallstudentlist'] = 'La ou les cohortes suivantes ont été inscrites depuis la liste d\'étudiants : {$a}';
+$string['messageallnostudentlist'] = 'Le ou les étudiants suivants ont été renseignés mais aucune cohorte n\'a été trouvé leur correspondant : {$a}';
+$string['messagealltoomanystudentlist'] = 'Le ou les étudiants suivants ont été renseignés mais plusieurs cohortes ont été trouvés'
+        . ' leur correspondant et aucune n\'a donc été inscrite : {$a}';
 

@@ -61,4 +61,9 @@ $string['messagelistcohortstudent'] = 'TODO : Fill this string';
 $string['messageerror'] = 'TODO : Fill this string';
 $string['messagecommentteacher'] = 'TODO : Fill this string';
 $string['messageending'] = 'TODO : Fill this string';
+$string['couplingcohortstudent'] = 'TODO : Fill this string';
+$string['messageallcohortlist'] = 'TODO : Fill this string';
+$string['messageallstudentlist'] = 'TODO : Fill this string';
+$string['messageallnostudentlist'] = 'TODO : Fill this string';
+$string['messagealltoomanystudentlist'] = 'TODO : Fill this string';
 

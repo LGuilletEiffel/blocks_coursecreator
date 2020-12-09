@@ -73,24 +73,34 @@ if ($mform->is_cancelled()) {
     $teacherroleid = $DB->get_record('role', array('shortname' => 'editingteacher'))->id;
     $enrolplugin->enrol_user($enrol, $USER->id, $teacherroleid);
 
-    $countcohorts = 0;
-    $listcorrectcohortusers = array();
-    $typecohort = 0;
-    $cohortid = 0;
-    $studentid = 0;
-
     if ($fromform->coursechoice != 0) {
 
         copycourse($fromform->coursechoice, $newcourse->id);
     }
 
+    $cohortsokaycohortchoice = "";
+    $cohortsokaystudentchoice = "";
+    $cohortsnotokaystudentchoicenone = "";
+    $cohortsnotokaystudentchoicetoomany = "";
+
 
     foreach ($fromform->cohortchoice as $cohortchoice) {
 
         enrolcohort($cohortchoice, $newcourse->id);
+
+        $cohort = $DB->get_record('cohort', array('id' => $cohortchoice));
+        if ($cohortsokaycohortchoice == "") {
+
+            $cohortsokaycohortchoice .= $cohort->name;
+        } else {
+
+            $cohortsokaycohortchoice .= ', ' . $cohort->name;
+        }
     }
 
     foreach ($fromform->namestudent as $studentid) {
+
+        $countcohorts = 0;
 
         // Chercher les cohortes où il est inscrit.
         // Vérifier qu'il n'y en a qu'une dans la catégorie autorisée puis enrolcohort.
@@ -112,15 +122,47 @@ if ($mform->is_cancelled()) {
                     $cohortid = $DB->get_record('cohort',
                                     array('id' => $cohortuser->cohortid, 'contextid' => $contextdestinationcategoryid))->id;
                 }
-
-                $listcorrectcohortusers[] = $DB->get_record('cohort',
-                        array('id' => $cohortuser->cohortid, 'contextid' => $contextdestinationcategoryid));
             }
         }
+
+        $student = $DB->get_record('user', array('id' => $studentid));
 
         if ($countcohorts == 1) {
 
             enrolcohort($cohortid, $newcourse->id);
+
+            $cohort = $DB->get_record('cohort', array('id' => $cohortchoice));
+
+            if ($cohortsokaystudentchoice == "") {
+
+                $stringparams = new stdClass();
+                $stringparams->cohortname = $cohort->name;
+                $stringparams->studentfirstname = $student->firstname;
+                $stringparams->studentlastname = $student->lastname;
+
+                $cohortsokaystudentchoice .= get_string('couplingcohortstudent', 'block_coursecreator', $stringparams);
+            } else {
+
+                $cohortsokaystudentchoice .= ', ' . $cohort->name;
+            }
+        } else if ($countcohorts < 1) {
+
+            if ($cohortsnotokaystudentchoicenone == "") {
+
+                $cohortsnotokaystudentchoicenone .= $student->firstname . ' ' . $student->lastname;
+            } else {
+
+                $cohortsnotokaystudentchoicenone .= ', ' . $student->firstname . ' ' . $student->lastname;
+            }
+        } else {
+
+            if ($cohortsnotokaystudentchoicetoomany == "") {
+
+                $cohortsnotokaystudentchoicetoomany .= $student->firstname . ' ' . $student->lastname;
+            } else {
+
+                $cohortsnotokaystudentchoicetoomany .= ', ' . $student->firstname . ' ' . $student->lastname;
+            }
         }
     }
 
@@ -153,8 +195,8 @@ if ($mform->is_cancelled()) {
 //
 //        $typecohort = 2;
 
-    sendmail($typecohort, $fromform->coursechoice, $coursedata->fullname, $coursedata->shortname,
-            $newcourse->id, $fromform->commentteacher, $fromform->namestudent);
+    sendmail($fromform->coursechoice, $coursedata->fullname, $coursedata->shortname, $newcourse->id, $fromform->commentteacher,
+            $cohortsokaycohortchoice, $cohortsokaystudentchoice, $cohortsnotokaystudentchoicenone, $cohortsnotokaystudentchoicetoomany);
 
     redirect($redirecturlcourse);
 } else {
@@ -230,27 +272,24 @@ function enrolcohort($cohortid, $courseid) {
 
     $studentroleid = $DB->get_record('role', array('shortname' => 'student'))->id;
 
-    $cohortplugin = enrol_get_plugin('cohort');
-    $cohortplugin->add_instance($course, array('customint1' => $cohortid, 'roleid' => $studentroleid,
-        'customint2' => null));
+    if (!$DB->record_exists('enrol', array('courseid' => $courseid, 'customint1' => $cohortid, 'roleid' => $studentroleid))) {
 
-    $trace = new null_progress_trace();
-    enrol_cohort_sync($trace, $courseid);
-    $trace->finished();
+        $cohortplugin = enrol_get_plugin('cohort');
+        $cohortplugin->add_instance($course, array('customint1' => $cohortid, 'roleid' => $studentroleid,
+            'customint2' => null));
+
+        $trace = new null_progress_trace();
+        enrol_cohort_sync($trace, $courseid);
+        $trace->finished();
+    }
 }
 
-function sendmail($typecohort, $origincourseid, $coursefullname, $courseshortname, $newcourseid,
-        $countcohorts, $listcorrectcohortusers, $commentteacher, $cohortid, $apogeecode, $studentid) {
+function sendmail($origincourseid, $coursefullname, $courseshortname, $newcourseid, $commentteacher,
+        $cohortsokaycohortchoice, $cohortsokaystudentchoice, $cohortsnotokaystudentchoicenone, $cohortsnotokaystudentchoicetoomany) {
 
     // A modifier maintenant qu'on peut inscrire plusieurs cohortes.
 
     global $USER, $DB, $CFG;
-
-    if ($typecohort == 3) {
-
-        $student = $DB->get_record('user', array('id' => $studentid));
-        $studentname = $student->firstname . " " . $student->lastname;
-    }
 
     $to = get_config('coursecreator', 'mailrecipients');
 
@@ -279,68 +318,89 @@ function sendmail($typecohort, $origincourseid, $coursefullname, $courseshortnam
     }
 
     // Cas des cohortes.
-    if ($typecohort == 0) {
 
-        // Ne rien faire.
-        $message .= "";
-    } else if ($typecohort == 1) {
-        // Cas 1 : Cohorte inscrite via la liste.
+    if ($cohortsokaycohortchoice != "") {
 
-        $cohort = $DB->get_record('cohort', array('id' => $cohortid));
-
-        $stringcohortparam = new stdClass();
-        $stringcohortparam->name = $cohort->name;
-
-        $message .= "\n" . get_string('messagecohortlist', 'block_coursecreator', $stringcohortparam);
-    } else if ($typecohort == 2 && $cohortid != 0) {
-        // Cas 2 : Cohorte inscrite via le code Apogée.
-
-        $cohort = $DB->get_record('cohort', array('id' => $cohortid));
-
-        $stringcohortparam = new stdClass();
-        $stringcohortparam->name = $cohort->name;
-        $stringcohortparam->apogeecode = $apogeecode;
-        $message .= "\n" . get_string('messagecohortapogee', 'block_coursecreator', $stringcohortparam);
-    } else if ($typecohort == 2 && $cohortid == 0) {
-        // Cas 3 : Cohorte non trouvée malgré le code Apogée.
-
-        $stringcohortparam = new stdClass();
-        $stringcohortparam->apogeecode = $apogeecode;
-        $message .= "\n" . get_string('messagenocohortapogee', 'block_coursecreator', $stringcohortparam);
-    } else if ($typecohort == 3 && $countcohorts == 1) {
-        // Cas 4 : Cohorte inscrite grâce au nom de l'étudiant.
-
-        $cohort = $DB->get_record('cohort', array('id' => $cohortid));
-
-        $stringcohortparam = new stdClass();
-        $stringcohortparam->name = $cohort->name;
-        $stringcohortparam->studentname = $studentname;
-        $message .= "\n" . get_string('messagecohortstudent', 'block_coursecreator', $stringcohortparam);
-    } else if ($typecohort == 3 && $countcohorts == 0) {
-        // Cas 5 : Aucun cohorte trouvée avec l'étudiant.
-
-        $stringcohortparam = new stdClass();
-        $stringcohortparam->studentname = $studentname;
-        $message .= "\n" . get_string('messagenocohortstudent', 'block_coursecreator', $stringcohortparam);
-    } else if ($typecohort == 3 && $countcohorts > 1) {
-        // Cas 6 : Plusieurs cohortes trouvées avec l'étudiant.
-
-        $stringlistcohort = "";
-
-        foreach ($listcorrectcohortusers as $correctcohortuser) {
-
-            $stringlistcohort .= $correctcohortuser->name . "\n";
-        }
-
-        $stringcohortparam = new stdClass();
-        $stringcohortparam->studentname = $studentname;
-        $stringcohortparam->listcohorts = $stringlistcohort;
-        $message .= "\n" . get_string('messagelistcohortstudent', 'block_coursecreator', $stringcohortparam);
-    } else {
-        // Ne devrait jamais arriver.
-
-        $message .= "\n" . get_string('messageerror', 'block_coursecreator');
+        $message .= "\n" . get_string('messageallcohortlist', 'block_coursecreator', $cohortsokaycohortchoice);
     }
+
+    if ($cohortsokaystudentchoice != "") {
+
+        $message .= "\n" . get_string('messageallstudentlist', 'block_coursecreator', $cohortsokaystudentchoice);
+    }
+
+    if ($cohortsnotokaystudentchoicenone != "") {
+
+        $message .= "\n" . get_string('messageallnostudentlist', 'block_coursecreator', $cohortsnotokaystudentchoicenone);
+    }
+
+    if ($cohortsnotokaystudentchoicetoomany != "") {
+
+        $message .= "\n" . get_string('messagealltoomanystudentlist', 'block_coursecreator', $cohortsnotokaystudentchoicetoomany);
+    }
+// Ancien système de message pour les cohortes.
+//    if ($typecohort == 0) {
+//
+//        // Ne rien faire.
+//        $message .= "";
+//    } else if ($typecohort == 1) {
+//        // Cas 1 : Cohorte inscrite via la liste.
+//
+//        $cohort = $DB->get_record('cohort', array('id' => $cohortid));
+//
+//        $stringcohortparam = new stdClass();
+//        $stringcohortparam->name = $cohort->name;
+//
+//        $message .= "\n" . get_string('messagecohortlist', 'block_coursecreator', $stringcohortparam);
+//    } else if ($typecohort == 2 && $cohortid != 0) {
+//        // Cas 2 : Cohorte inscrite via le code Apogée.
+//
+//        $cohort = $DB->get_record('cohort', array('id' => $cohortid));
+//
+//        $stringcohortparam = new stdClass();
+//        $stringcohortparam->name = $cohort->name;
+//        $stringcohortparam->apogeecode = $apogeecode;
+//        $message .= "\n" . get_string('messagecohortapogee', 'block_coursecreator', $stringcohortparam);
+//    } else if ($typecohort == 2 && $cohortid == 0) {
+//        // Cas 3 : Cohorte non trouvée malgré le code Apogée.
+//
+//        $stringcohortparam = new stdClass();
+//        $stringcohortparam->apogeecode = $apogeecode;
+//        $message .= "\n" . get_string('messagenocohortapogee', 'block_coursecreator', $stringcohortparam);
+//    } else if ($typecohort == 3 && $countcohorts == 1) {
+//        // Cas 4 : Cohorte inscrite grâce au nom de l'étudiant.
+//
+//        $cohort = $DB->get_record('cohort', array('id' => $cohortid));
+//
+//        $stringcohortparam = new stdClass();
+//        $stringcohortparam->name = $cohort->name;
+//        $stringcohortparam->studentname = $studentname;
+//        $message .= "\n" . get_string('messagecohortstudent', 'block_coursecreator', $stringcohortparam);
+//    } else if ($typecohort == 3 && $countcohorts == 0) {
+//        // Cas 5 : Aucun cohorte trouvée avec l'étudiant.
+//
+//        $stringcohortparam = new stdClass();
+//        $stringcohortparam->studentname = $studentname;
+//        $message .= "\n" . get_string('messagenocohortstudent', 'block_coursecreator', $stringcohortparam);
+//    } else if ($typecohort == 3 && $countcohorts > 1) {
+//        // Cas 6 : Plusieurs cohortes trouvées avec l'étudiant.
+//
+//        $stringlistcohort = "";
+//
+//        foreach ($listcorrectcohortusers as $correctcohortuser) {
+//
+//            $stringlistcohort .= $correctcohortuser->name . "\n";
+//        }
+//
+//        $stringcohortparam = new stdClass();
+//        $stringcohortparam->studentname = $studentname;
+//        $stringcohortparam->listcohorts = $stringlistcohort;
+//        $message .= "\n" . get_string('messagelistcohortstudent', 'block_coursecreator', $stringcohortparam);
+//    } else {
+//        // Ne devrait jamais arriver.
+//
+//        $message .= "\n" . get_string('messageerror', 'block_coursecreator');
+//    }
 
     if ($commentteacher != "") {
 
