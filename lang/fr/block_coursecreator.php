@@ -40,7 +40,7 @@ $string['mailrecipients'] = 'Destinataires du mail';
 $string['requiredfieldform'] = 'Champ requis';
 $string['newcoursename'] = 'Nom complet du cours';
 $string['apogeecode'] = 'Indiquez le code APOGEE de votre cours<br>Retrouvez le code APOGEE correspondant sur'
-        . ' <a href=https://dora.u-pem.fr/>DORA</a> ou contactez votre secrétariat ou indiquez un nom abrégé du cours.';
+        . ' <a target="_blank" rel="noopener noreferrer" href=https://dora.u-pem.fr/>DORA</a> ou contactez votre secrétariat ou indiquez un nom abrégé du cours.';
 $string['validateform'] = 'Créer le cours';
 $string['destinationcategory'] = 'Catégorie destination (par défaut l\'année en cours';
 $string['importtext'] = 'Importez du contenu d\'un cours existant';
